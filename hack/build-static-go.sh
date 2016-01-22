@@ -3,7 +3,7 @@
 # Graciously copied/modeled after Kubernetes
 # https://github.com/kubernetes/kubernetes/blob/master/hack
 
-# statically build a binary of a golang pkg from a gb project
+# statically build a binary for each golang pkg (from a gb project)
 set -o errexit
 set -o nounset
 set -o pipefail
