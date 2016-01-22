@@ -16,15 +16,15 @@ if [ $# -lt $EXPECTEDARGS ]; then
 exit 0
 fi
 
-PROJ_ROOT=`readlink -f $1`
+GB_PROJ_ROOT=`readlink -f $1`
 
-GOPATH=${PROJ_ROOT}:${PROJ_ROOT}/vendor
+GOPATH=${GB_PROJ_ROOT}:${GB_PROJ_ROOT}/vendor
 
 COMPILE_SUBPATH="bin"
-COMPILE_BINPATH="${PROJ_ROOT}/${COMPILE_SUBPATH}"
+COMPILE_BINPATH="${GB_PROJ_ROOT}/${COMPILE_SUBPATH}"
 
 OUTPUT_SUBPATH="_output"
-OUTPUT="${PROJ_ROOT}/${OUTPUT_SUBPATH}"
+OUTPUT="${GB_PROJ_ROOT}/${OUTPUT_SUBPATH}"
 OUTPUT_BINPATH="${OUTPUT}/bin"
 
 GO_PKGS="${@:2}"
@@ -57,7 +57,7 @@ golang::build_binaries() {
     done
 
     for binary in "${statics[@]:+${statics[@]}}"; do
-        local outfile=$PROJ_ROOT/bin/$(basename "${binary}")
+        local outfile=$COMPILE_BINPATH/$(basename "${binary}")
         CGO_ENABLED=0  GOOS=linux go build -o "${outfile}" \
         -a -installsuffix cgo -ldflags '-w -extld ld -extldflags -static' \
         -a -x "${binary}"
