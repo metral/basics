@@ -10,9 +10,9 @@ set -o pipefail
 
 EXPECTEDARGS=2
 if [ $# -lt $EXPECTEDARGS ]; then
-  echo "Usage: $0 <GB_PROJ_ROOT> <GO_PACKAGE(S)>"
+  echo "Usage: $0 <GB_PROJ_ROOT> <GO_PKGS>"
   echo "i.e. /home/metral/foobar github.com/metral/foobar"
-  echo "i.e. /home/metral/foobar github.com/metral/foobar github.com/metral/foobar/cmd/foo"
+  echo "i.e. . github.com/metral/foobar github.com/metral/foobar/cmd/foo"
 exit 0
 fi
 
