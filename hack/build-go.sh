@@ -10,64 +10,50 @@ set -o pipefail
 
 EXPECTEDARGS=2
 if [ $# -lt $EXPECTEDARGS ]; then
-  echo "Usage: $0 <GB_PROJ_ROOT> <GO_PACKAGE>"
+  echo "Usage: $0 <GB_PROJ_ROOT> <GO_PACKAGE(S)>"
   echo "i.e. /home/metral/foobar github.com/metral/foobar"
-  echo "i.e. /home/metral/foobar github.com/metral/foobar/cmd/foo"
+  echo "i.e. /home/metral/foobar github.com/metral/foobar github.com/metral/foobar/cmd/foo"
 exit 0
 fi
 
-PROJ_ROOT=$1
-#PROJ_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-#PROJ_ROOT=$( dirname $PROJ_ROOT)
+PROJ_ROOT=`readlink -f $1`
 
-GO_PACKAGE=$2
 GOPATH=${PROJ_ROOT}:${PROJ_ROOT}/vendor
+
+COMPILE_SUBPATH="bin"
+COMPILE_BINPATH="${PROJ_ROOT}/${COMPILE_SUBPATH}"
 
 OUTPUT_SUBPATH="_output"
 OUTPUT="${PROJ_ROOT}/${OUTPUT_SUBPATH}"
 OUTPUT_BINPATH="${OUTPUT}/bin"
 
-#readonly SERVER_TARGETS=${GO_PACKAGE-""}
-readonly ALL_TARGETS=(
-  #"${SERVER_TARGETS[@]}"
-  $GO_PACKAGE
-)
+GO_PKGS="${@:2}"
 
-golang::binaries_from_targets() {
-  local target
-  for target; do
-    if [[ "${target}" =~ ^([[:alnum:]]+".")+[[:alnum:]]+"/" ]]; then
-      echo "${target}"
-    else
-      if [ -z "${target}" ]; then
-        echo "${GO_PACKAGE}"
-      else
-        echo "${GO_PACKAGE}/${target}"
-      fi
-    fi
-  done
-}
+# bin dir holding all static bins compiled
+mkdir -p $COMPILE_BINPATH
+# bin dir that holds a copy of the static bins compiled
+mkdir -p $OUTPUT_BINPATH
 
+# setup GOPATH to build a gb project using `go build` since gb can't static
+# build yet
 golang::setup_env(){
     export GOPATH
 }
 
+# get targets from args and statically build their bins
 golang::build_binaries() {
     golang::setup_env
 
     local -a targets=()
     if [[ ${#targets[@]} -eq 0 ]]; then
-        targets=("${ALL_TARGETS[@]}")
+        targets=("${GO_PKGS[@]}")
     fi
-
-    local binaries
-    binaries=($(golang::binaries_from_targets "${targets[@]}"))
 
     local -a statics=()
     local -a nonstatics=()
     local -a tests=()
-    for binary in "${binaries[@]}"; do
-        statics+=($binary)
+    for target in "${targets[@]}"; do
+        statics+=($target)
     done
 
     for binary in "${statics[@]:+${statics[@]}}"; do
@@ -78,9 +64,9 @@ golang::build_binaries() {
     done
 }
 
+# copy static bins from COMPILE_BINPATH to $OUTPUT_BINPATH
 golang::place_bins(){
-  mkdir -p $OUTPUT_BINPATH
-  cp -r $PROJ_ROOT/bin/* $OUTPUT_BINPATH
+  cp -r $COMPILE_BINPATH/* $OUTPUT_BINPATH
 }
 
 golang::build_binaries
