@@ -6,8 +6,8 @@ set -o pipefail
 
 # run golang tests
 PROJ_ROOT="$(dirname $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd ))"
-GO_PACKAGE=github.com/metral/core
-PROJ_ROOT=$PROJ_ROOT/src/$GO_PACKAGE
+GO_PKGS=github.com/metral/core
+PROJ_ROOT=$PROJ_ROOT/src/$GO_PKGS
 
 export GOPATH=$(pwd):$(pwd)/vendor
 export CONF_FILEPATH=$(pwd)/vendor/src/github.com/metral/nucleus/pkg/config/test_config.toml
@@ -37,7 +37,7 @@ if [[ ${#testcases[@]} -eq 0 ]]; then
 fi
 set -- "${testcases[@]+${testcases[@]}}"
 
-TEST_PKGS="${@+${@/#/${GO_PACKAGE}/}}"
+TEST_PKGS="${@+${@/#/${GO_PKGS}/}}"
 if [ ! -z $TEST_PKGS ]; then
     go test \
         -v \
