@@ -15,7 +15,7 @@ if [ $# -lt $EXPECTEDARGS ]; then
     echo "Usage: $0 <GB_PROJ_ROOT> <OPTIONAL_GO_PKGS>"
     echo "i.e. $0 ."
     echo "i.e. $0 /home/metral/foobar github.com/metral/foobar"
-    exit 0
+    exit 1
 fi
 
 GB_PROJ_ROOT=`readlink -f $1`

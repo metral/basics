@@ -8,12 +8,24 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-EXPECTEDARGS=2
-if [ $# -lt $EXPECTEDARGS ]; then
+golang::usage(){
   echo "Usage: $0 <GB_PROJ_ROOT> <GO_PKGS>"
   echo "i.e. /home/metral/foobar github.com/metral/foobar"
-  echo "i.e. . github.com/metral/foobar github.com/metral/foobar/cmd/foo"
-exit 0
+  echo "or . github.com/metral/foobar github.com/metral/foobar/cmd/foo"
+  echo "or GO_PKGS='github.com/metral/foobar' ."
+  exit 1
+}
+
+EXPECTEDARGS=1
+if [ $# -lt $EXPECTEDARGS ]; then
+    golang::usage
+fi
+
+GO_PKGS_ARGS="${@:2}"
+GO_PKGS="${GO_PKGS:-$GO_PKGS_ARGS}"
+
+if [ -z $GO_PKGS ]; then
+    golang::usage
 fi
 
 GB_PROJ_ROOT=`readlink -f $1`
@@ -26,8 +38,6 @@ COMPILE_BINPATH="${GB_PROJ_ROOT}/${COMPILE_SUBPATH}"
 OUTPUT_SUBPATH="_output"
 OUTPUT="${GB_PROJ_ROOT}/${OUTPUT_SUBPATH}"
 OUTPUT_BINPATH="${OUTPUT}/bin"
-
-GO_PKGS="${@:2}"
 
 # bin dir holding all static bins compiled
 mkdir -p $COMPILE_BINPATH

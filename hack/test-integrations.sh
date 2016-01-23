@@ -13,7 +13,7 @@ if [ $# -lt $EXPECTEDARGS ]; then
     echo "Usage: $0 <GB_PROJ_ROOT>"
     echo "i.e. $0 ."
     echo "i.e. $0 /home/metral/foobar"
-    exit 0
+    exit 1
 fi
 
 SCRIPTS_ROOT=$(dirname "${BASH_SOURCE}")
