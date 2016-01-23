@@ -60,7 +60,7 @@ golang::test_pkgs() {
     fi
     set -- "${testcases[@]+${testcases[@]}}"
 
-    # iterate through all the pkg testing listed in testcases
+    # iterate through all of the golang pkg tests in testcases
     for pkg in "${testcases[@]:+${testcases[@]}}"; do
         go test -v ${pkg}
     done
