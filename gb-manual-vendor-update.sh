@@ -11,8 +11,6 @@ if [ $# -lt $EXPECTEDARGS ]; then
 exit 0
 fi
 
-mkdir -p vendor/src
-
 # get path of gb lib & the lib's name
 GB_LIB_GITHUB=ssh://git@$1
 GB_LIB_BRANCH=$2
@@ -22,18 +20,24 @@ GB_LIB_NAME=`basename $GB_LIB_GITHUB`
 # accidentally screw something up in the real lib)
 TEMP_GB_LIB_GITHUB="/tmp/$GB_LIB_NAME-`date +%s`"
 git clone --branch $GB_LIB_BRANCH $GB_LIB_GITHUB $TEMP_GB_LIB_GITHUB
+cp vendor/manifest $TEMP_GB_LIB_GITHUB
+cat $TEMP_GB_LIB_GITHUB/manifest
 
+rm -rf vendor
+mkdir -p vendor/src
 # copy lib src & vendored deps to this projects vendor
 cp -r $TEMP_GB_LIB_GITHUB/vendor/src/* vendor/src/
 cp -r $TEMP_GB_LIB_GITHUB/src/* vendor/src/
 
 # get hash of lib being vendored to know what version we're depending on
 pushd $TEMP_GB_LIB_GITHUB > /dev/null
-git reset --hard HEAD;
-git clean -d -f;
 GB_LIB_HASH=`git rev-parse --short HEAD`
 popd > /dev/null
-echo "\"$GB_LIB_NAME\" : $GB_LIB_HASH" | tee manifest
+echo "\"$GB_LIB_NAME\" : $GB_LIB_HASH" | tee manual_manifest
+
+# restore old deps (if there were any)
+mv $TEMP_GB_LIB_GITHUB/manifest vendor/
+gb vendor restore
 
 # cleanup
 rm -rf $TEMP_GB_LIB_GITHUB
