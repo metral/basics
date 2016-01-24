@@ -11,6 +11,8 @@ if [ $# -lt $EXPECTEDARGS ]; then
 exit 0
 fi
 
+mkdir -p vendor/src
+
 # get path of gb lib & the lib's name
 GB_LIB_GITHUB=ssh://git@$1
 GB_LIB_BRANCH=$2
