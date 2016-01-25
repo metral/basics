@@ -60,16 +60,14 @@ golang::build_binaries() {
     fi
 
     local -a statics=()
-    local -a nonstatics=()
-    local -a tests=()
     for target in "${targets[@]}"; do
         statics+=($target)
     done
 
     for binary in "${statics[@]:+${statics[@]}}"; do
         local outfile=$COMPILE_BINPATH/$(basename "${binary}")
-        CGO_ENABLED=0  GOOS=linux go build -o "${outfile}" \
-        -a -installsuffix cgo -ldflags '-w -extld ld -extldflags -static' \
+        CGO_ENABLED=0 GOOS=linux go build -o "${outfile}" \
+        -a -installsuffix no_cgo -ldflags '-w -extld ld -extldflags -static' \
         -a -x "${binary}"
     done
 }

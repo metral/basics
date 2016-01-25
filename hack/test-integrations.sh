@@ -34,7 +34,6 @@ test::find_dirs() {
     )
 }
 
-
 testcases=()
 testcases=($(test::find_dirs))
 
