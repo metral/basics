@@ -4,28 +4,37 @@
 # project that is running this script is running on behalf of
 # (as gb doesn't do vendoring of other gb projects, yet)
 
-EXPECTEDARGS=2
+EXPECTEDARGS=1
 if [ $# -lt $EXPECTEDARGS ]; then
-  echo "Usage: $0 <GB_LIB_GITHUB> <GB_LIB_BRANCH>"
-  echo "i.e. github.com/foo/bar master"
+  echo "Usage: $0 <GB_LIB> <GB_LIB_GIT_BRANCH>"
+  echo "i.e. remote: github.com/foo/bar master"
+  echo "or local: ../dev/foobar"
 exit 0
 fi
 
-# get path of gb lib & the lib's name
-GB_LIB_GITHUB=ssh://git@$1
-GB_LIB_BRANCH=$2
-GB_LIB_NAME=`basename $GB_LIB_GITHUB`
-
-# make a copy of the lib to temp to use in manual vendoring (so we don't
-# accidentally screw something up in the real lib)
+# get gb lib location - either github.com URL or local directory
+GB_LIB=$1
+GB_LIB_NAME=`basename $GB_LIB`
 TEMP_GB_LIB_GITHUB="/tmp/$GB_LIB_NAME-`date +%s`"
-git clone --branch $GB_LIB_BRANCH $GB_LIB_GITHUB $TEMP_GB_LIB_GITHUB
-cp vendor/manifest $TEMP_GB_LIB_GITHUB
-cat $TEMP_GB_LIB_GITHUB/manifest
 
+if [[ $GB_LIB == github.com* ]]; then
+    # clone a copy of the lib to use in manual vendoring - remote
+    GB_LIB_BRANCH=$2
+    GB_LIB_GITHUB=ssh://git@$GB_LIB
+    git clone --branch $GB_LIB_BRANCH $GB_LIB_GITHUB $TEMP_GB_LIB_GITHUB
+else
+    # make a copy of the lib to temp to use in manual vendoring - local
+    cp -r $GB_LIB $TEMP_GB_LIB_GITHUB
+fi
+
+# copy this gb app's vendor manifest
+cp vendor/manifest $TEMP_GB_LIB_GITHUB > /dev/null 2>&1
+
+# blow away gb app vendor dir & create a new one
 rm -rf vendor
 mkdir -p vendor/src
-# copy lib src & vendored deps to this projects vendor
+
+# copy gb lib src & vendored deps to gb app's vendor/src
 cp -r $TEMP_GB_LIB_GITHUB/vendor/src/* vendor/src/
 cp -r $TEMP_GB_LIB_GITHUB/src/* vendor/src/
 
@@ -36,7 +45,7 @@ popd > /dev/null
 echo "\"$GB_LIB_NAME\" : $GB_LIB_HASH" | tee manual_manifest
 
 # restore old deps (if there were any)
-mv $TEMP_GB_LIB_GITHUB/manifest vendor/
+mv $TEMP_GB_LIB_GITHUB/manifest vendor/ > /dev/null 2>&1
 gb vendor restore
 
 # cleanup
